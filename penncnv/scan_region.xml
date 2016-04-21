@@ -1,0 +1,249 @@
+<tool id="penncnv" name="CNV annotator" version="1.0.0">
+        <description>with PennCNV</description>
+    <requirements>
+        <requirement type="package" version="0.1">penncnv</requirement>
+    </requirements>
+    <command interpreter="python">
+		scan_region.py
+        --resources \$PENNCNV_RESOURCES
+        --ex_path \$PENNCNV_PATH
+		#if $db 
+			--db $db
+		#end if
+		##if $score_th
+			##-p '--score_threshold "${score_th}"'
+		##end if
+		##if $normscore_th
+			##-p '--normscore_theshold "${normscore_th}"'
+		##end if
+		#if $minoverlap
+			-p '--minoverlap "${minoverlap}"'
+		#end if
+		#if $maxoverlap
+			-p '--maxoverlap "${maxoverlap}"'
+		#end if
+		#if $minquerydbratio
+			-p '--minquerydbratio "${minquerydbratio}"'
+		#end if
+		#if $maxquerydbratio
+			-p '--maxquerydbratio "${maxquerydbratio}"'
+		#end if
+		#if $mindbfrac
+			-p '--mindbfrac "${mindbfrac}"'
+		#end if
+		#if $maxdbfrac
+			-p '--maxdbfrac "${maxdbfrac}"'
+		#end if
+		#if $minqueryfrac
+			-p '--minqueryfrac "${minqueryfrac}"'
+		#end if
+		#if $maxqueryfrac
+			-p '--maxqueryfrac "${maxqueryfrac}"'
+		#end if
+		#if $expandleft
+			-p '--expandleft "${expandleft}"'
+		#end if
+		#if $expandright
+			-p '--expandright "${expandright}"'
+		#end if
+		#if $expandmax
+			-p '--expandmax "${expandmax}"'
+		#end if
+		#if $expanddb
+			-p '--expanddb "${expanddb}"'
+		#end if
+		##if $condense
+			##--condense
+		##end if
+		##if str($filters.filters_select)=="yes"
+			##-p '$filters.other_options'
+		##end if
+		--query $queryfile
+		--out $outputFile
+	</command>
+	<inputs>
+		<param format="txt" name="queryfile" type="data" label="CNV query file (hg19 only)">
+		</param>
+		<param name="db" type="select" display="checkboxes" multiple="true" label="Select Databases and options">
+			<option value="phastconsele_100">PhastConsElements 100 way: dbfile is UCSC MCE annotation file based on the
+				multiple alignments of 100 vertebrate genomes (including human)</option>
+			<option value="phastconsele_46">PhastConsElements 46 way: dbfile is UCSC MCE annotation file based on the
+				multiple alignments of 46 vertebrate genomes (including human)</option>
+			<option value="phastconsele_46_pla">PhastConsElements 46 way Placental: dbfile is UCSC MCE annotation file based on the
+				multiple alignments of 33 placental mammal genomes (including human)</option>
+			<option value="phastconsele_46_pri">PhastConsElements 46 way Primates: dbfile is UCSC MCE annotation file based on the
+				multiple alignments of 10 primate genomes (including human)</option>
+			<option value="kgxref">KnownGene and KgXref: use gene symbol in KNOWNGENE xref file in output</option>
+            <option value="reflink">RefGene and RefLink: use gene symbol in REFGENE link file in output</option>
+			<option value="refcds">RefGene and RefCds: use gene symbol in UCSC REFGENE with coding sequence annotation</option>
+			<option value="refexon">RefGene and RefExon: use gene symbol in UCSC REFGENE with exon annotation</option>
+			<option value="evofold">Evofold: dbfile is UCSC EVOFOLD annotation file with genomic segments predicted to retain stable RNA structural folds in different species </option>
+			<option value="tfbs">Tfbs: dbfile is UCSC TFBS annotation file with predicted transcription factor binding sites </option>
+			<option value="wgrna">WgRna: dbfile is UCSC WGRNA annotation file with microRNA and small nucleolar RNA </option>
+			<option value="segdup">Segdup: dbfile is UCSC SEGDUP annotation file with Segmental Duplications </option>
+            <option value="dgv">Dgv: dbfile is from DGV(Database of genomic variants)</option>
+            <option value="isca">Isca: dbfile is from ISCA Consortium</option>
+		</param>
+			<!--option value="refgene">RefGene: dbfile is UCSC REFGENE annotation file with genome location of RefSeq mRNA</option-->
+			<!--option value="knowngene">KnownGene: dbfile is UCSC KNOWNGENE annotation file with gene identifier (name), location, exon count and location, Swiss-Prot identifiers</option-->
+			<!--option value="phastcons_100">PhastCons 100 way: dbfile is UCSC phastcons conservation score file based on the
+				multiple alignments of 100 vertebrate genomes (including human)</option>
+			<option value="phastcons_46">PhastCons 46 way: dbfile is UCSC phastcons conservation score file based on the
+				multiple alignments of 46 vertebrate genomes (including human)</option>
+			<option value="phastcons_46_pla">PhastCons 46 way Placental: dbfile is UCSC phastcons conservation score file based on the multiple
+				alignments of 33 placental mammal genomes (including human)</option>
+			<option value="phastcons_46_pri">PhastCons 46 way Primates: dbfile is UCSC phastcons conservation score file based on the
+				multiple alignments of 10 primate genomes (including human)</option-->
+
+		<!--param name="score_th" size="10" type="float" value="" optional="true" label="Score threshold for db in UCSC annotation file"
+			help="- -score_threshold specify the score threshold in the DB file to include in the search for overlaps"></param>
+		<param name="normscore_th" size="10" type="integer" value="" optional="true" label="Normalized score threshold for db in UCSC annotation file"
+			help="- -normscore_threshold specify the normalized score threshold in the DB file to include in the search for overlaps"></param-->
+		<param name="minoverlap" size="10" type="float" value="" min="0" max="1" optional="true"
+               label="Minimum portion of overlap to decide query-db match (--minoverlap)"
+			help="Value must be between 0 and 1"/>
+		<param name="maxoverlap" size="10" type="float" value="" min="0" max="1" optional="true"
+               label="Maximum portion of overlap to decide query-db match (--maxoverlap)"
+			help="Value must be between 0 and 1"/>
+		<param name="minquerydbratio" size="10" type="float" value="" optional="true"
+               label="Minimum query to db length ratio to decide match (--minquerydbratio)"/>
+		<param name="maxquerydbratio" size="10" type="float" value="" optional="true"
+               label="Maximum query to db length ratio to decide match (--maxquerydbratio)"/>
+		<param name="mindbfrac" size="10" type="float" value="" optional="true"
+               label="Minimum fraction of db in overlap (--mindbfrac)"/>
+		<param name="maxdbfrac" size="10" type="float" value="" optional="true"
+               label="Maximum fraction of db in overlap (--maxdbfrac)"/>
+		<param name="minqueryfrac" size="10" type="float" value="" optional="true"
+               label="Minimum fraction of query in overlap (--minqueryfrac)"/>
+		<param name="maxqueryfrac" size="10" type="float" value="" optional="true"
+               label="Maximum fraction of query in overlap (--maxqueryfrac)"/>
+		<param name="expandleft" size="10" type="text" value="" optional="true"
+               label="Expand left side of query regions (--expandleft)"
+			help="used in conjunction with --refgene or --knowngene argument, overwrite --expandmax"/>
+		<param name="expandright" size="10" type="text" value="" optional="true"
+               label="Expand right side of query regions (--expandright)"
+			help="used in conjunction with --refgene or --knowngene argument, overwrite --expandmax"/>
+		<param name="expandmax" size="10" type="text" value="" optional="true"
+               label="Maximum expansion for query region to find overlap (--expandmax)"
+			help="used in junction with --refgene or --knowngene argument.
+			Only the closest gene will be printed; other genes, even if overlapping with the query after expansion, will not be printed."/>
+		<param name="expanddb" size="10" type="text" value="" optional="true" label="Expand definition of gene/cds/exon at both sides (--expanddb)"/>
+		<!--param name="condense" type="select" display="checkboxes" multiple="true" label="Condense query" help="When this argument is set, the annotation
+		    for each query (the strings after the chromosome location in each line of the query file) will not in the output except if are select kownGene and refGene databases.">
+			<option value="- -condense_query">Condense and eliminate overlapping regions in query</option>
+		</param>
+		<conditional name="filters">
+			<param name="filters_select" type="select" label="Other filters">
+				 <option value="yes">Yes</option>
+				 <option value="no" selected="true">No</option>
+			</param>
+			<when value="yes">
+				<param name="other_options" type="select" display="checkboxes" multiple="true" label="Select other options">
+					<option value="- -overlap">Print overlapped portion of region only</option>
+					<option value="- -dbregion">Print db region (default is to print query region)</option>
+				</param>
+			</when>
+			<when value="no" />
+		</conditional-->
+	</inputs>
+	<outputs>
+		<data format="tabular" name="outputFile" label="${tool.name} on ${on_string} :tabular" />
+	</outputs>
+    <help>
+
+.. class:: warningmark
+
+**Queryfile**
+
+All columns of queryfile must be separated by a tab character::
+
+    e.g. chr1     7117942     7121214
+
+-----
+
+.. class:: warningmark
+
+**Expand options**
+
+The value must be in a range that goes from kilobases to megabases::
+
+    e.g. 100k or 1m
+
+-----
+
+**What it does**
+
+This tool annotates Copy Number Variations between a query file and many genomic databases.
+The tool is based on scan_region.pl script available within the PennCNV suite.
+
+-----
+
+**Output format**
+
+============= ================================= ============================================
+Name          DB                                 Description
+------------- --------------------------------- --------------------------------------------
+pce100name    phastConsElements100way           Name of item from phastConsElements100way (100 species)
+pce100score   phastConsElements100way           Score from 0-1000
+pce46plname   phastConsElements46wayPlacental   Name of item from phastConsElements46wayPlacental (46 species, placental)
+pce46plscore  phastConsElements46wayPlacental   Score from 0-1000
+pce46prname   phastConsElements46wayPrimates    Name of item from phastConsElements46wayPrimates (46 species, primates)
+pce46prscore  phastConsElements46wayPrimates    Score from 0-1000
+pce46name     phastConsElements46way            Name of item from phastConsElements46way (46 species)
+pce46score    phastConsElements46way            Score from 0-1000
+kgsym         knownGene                         Gene symbol from UCSC Known Gene
+kgdist        knownGene                         Distances between UCSC Known Gene and query location
+refgsym       refGene                           Gene symbol from UCSC RefGene
+refgdist      refGene                           Distances between UCSC RefGene and query location
+cdsdist       cds in refGene                    Distances between UCSC RefGene CDS and query location
+exondist      exons in refGene                  Distances between USCS RefGene EXONS and query location
+evoscore      evofold                           Score of EvoFold prediction of RNA secondary structure (0-1000)
+tfbsscorez    tfbsConsSites                     Z-score of conserved Transcription Factor Binding Sites (TFBS)
+tfbsscore     tfbsConsSites                     Score of conserved TFBS (0-1000)
+miRNA         wgRna                             Name of different types of human RNAs (pre-miRNAs, C/D box snoRNAs, H/ACA box snoRNAs, scaRNAs)
+dupreg        segdup                            Location of segmental duplications
+dgvgain       DGV                               Number of samples with copy number gains from DGV (#overlap/#samples)
+dgvloss       DGV                               Number of samples with copy number losses from DGV (#overlap/#samples)
+annotation    ISCA                              Disease annotation from ISCA
+pathscore     ISCA                              Pathogenicity scores from ISCA (see the table below)
+============= ================================= ============================================
+
+-----
+
+ISCA pathogenicity score refers to the different ISCA's databases in which the CNVs are annotated:
+
+========== ========================
+Score      Description
+---------- ------------------------
+1          Benign_hg19_curated
+2          Benign_hg19
+3          Likely_Benign_hg19
+4          Likely_Pathogenic_hg19
+5          Pathogenic_hg19
+6          Pathogenic_hg19_curated
+========== ========================
+
+-----
+
+**License and citation**
+
+
+This Galaxy tool is Copyright © 2014 `CRS4 Srl.`_ and is released under the `MIT license`_.
+
+.. _CRS4 Srl.: http://www.crs4.it/
+.. _MIT license: http://opensource.org/licenses/MIT
+
+
+If you use this tool, please cite:
+
+- |Cuccuru2014|_
+- |Wang2007|_.
+
+
+.. |Cuccuru2014| replace:: Cuccuru, G., Orsini, M., Pinna, A., Sbardellati, A., Soranzo, N., Travaglione, A., Uva, P., Zanetti, G., Fotia, G. (2014) Orione, a web-based framework for NGS analysis in microbiology. *Bioinformatics* 30(13), 1928-1929
+.. _Cuccuru2014: http://bioinformatics.oxfordjournals.org/content/30/13/1928
+.. |Wang2007| replace:: Kai Wang, Mingyao Li, Dexter Hadley, et al. PennCNV: An integrated hidden Markov model designed for high-resolution copy number variation detection in whole-genome
+    SNP genotyping data. *Genome Res*. 2007 17: 1665-1674 (originally published online October 5, 2007)
+.. _Wang2007: http://genome.cshlp.org/content/17/11/1665.short
+    </help>
+</tool>
