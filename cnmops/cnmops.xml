@@ -1,0 +1,151 @@
+<tool id="cnmops" name="cn.mops" version="1.0.0">
+  <description>cnv caller</description>
+  <command interpreter="Rscript">
+   cnmops.R $args_file
+  </command>
+  <requirements>
+     <requirement type="package" version="3.0.1">R</requirement>
+  </requirements>
+  <inputs>
+    <param format="bed" name="targetFile" type="data" label="Target regions (BED)">
+      <validator type="unspecified_build" />
+    </param>
+    <param name="padding" type="integer" value="100" label="Padding" help="Amount of padding (in bp) to add around each target region" />
+    <param name="mapping_mode" type="select" label="Mapping mode" help="Select whether the mapping algorithm was run using paired or unpaired reads">
+        <option value="paired" selected="true">paired</option>
+        <option value="unpaired">unpaired</option>
+    </param>
+    <repeat name="inputs" title="BAM" min="2" help="Need to add more files? Use controls below.">
+      <param format="bam" name="input" type="data" label="BAM file">
+        <options>
+          <filter type="data_meta" ref="targetFile" key="dbkey"/>
+        </options>
+      </param>
+      <param name="label" type="text" size="30" value="" label="Label" help="Label to use in the output. If not given, the dataset name will be used instead">
+        <validator type="regex" message="Spaces are not allowed">^\S*$</validator>
+      </param>
+    </repeat>
+    
+    <!-- Advanced options -->
+    <conditional name="advanced_options">
+      <param name="advanced_options_select" type="select" label="Show advanced options">
+        <option value="yes">Yes</option>
+        <option value="no" selected="true">No</option>
+      </param>
+      <when value="yes">
+        <param name="prior_impact" type="integer" value="10" label="Prior impact" help="Positive real value that reflects how strong the prior assumption affects the result. The higher the value the more samples will be assumed to have copy number 2." />
+        <param name="cyc" type="integer" value="20" label="Cycles" help="Positive integer that sets the number of cycles for the algorithm. Usually after less than 15 cycles convergence is reached." />
+        <param name="norm" type="boolean" truevalue="TRUE" falsevalue="FALSE" checked="true" label="Apply normalization" help="" />
+        <param name="norm_type" type="select" label="Normalization type" help="Mode of the normalization technique. Read counts will be scaled sample-wise.">
+          <option value="poisson" selected="true">poisson</option>
+          <option value="mean">mean</option>
+          <option value="min">min</option>
+          <option value="median">median</option>
+          <option value="quant">quant</option>
+          <option value="mode">mode</option>
+        </param>
+        <param name="upper_threshold" type="float" value="0.55" label="Cut-off for copy number gains" help="All CNV calling values above this value will be called as gain. The value should be set close to the log2 of the expected foldchange for copy number 3 or 4." />
+        <param name="lower_threshold" type="float" value="-0.8" label="Cut-off for copy number losses" help="All CNV calling values below this value will be called as loss. The value should be set close to the log2 of the expected foldchange for copy number 1 or 0." />
+        <param name="min_width" type="integer" value="5" label="Minimum width" help="Minimum number of segments a CNV should span." />
+        <param name="seq_alg" type="select" label="Segmentation algorithm" help="">
+          <option value="fast" selected="fast">fast</option>
+          <option value="DNAcopy">DNAcopy</option>
+        </param>
+        <param name="min_read_count" type="integer" value="1" label="Minimum read count" help="If all samples are below this value the algorithm will return the prior knowledge. This prevents the algorithm from being applied to segments with very low coverage." />
+        <param name="use_median" type="boolean" truevalue="TRUE" falsevalue="FALSE" checked="false" label="Use median" help="Whether median instead of mean of a target region should be used for the CNV call." />
+    </when>
+      <when value="no" />
+    </conditional>
+  </inputs>
+  <configfiles>
+    <configfile name="args_file">target=$targetFile
+padding=$padding
+mapping_mode=$mapping_mode
+#for $i in $inputs
+bam=${i.input}
+bam_bai=${i.input.metadata.bam_index}
+#if str($i.label.value) != "":
+bam_label=${$i.label.value}
+#else
+bam_label=${i.input.dataset.name}
+#end if
+#end for
+output=$output
+#if str($advanced_options.advanced_options_select) == "yes"
+advanced_mode=TRUE
+$advanced_options.prior_impact=$prior_impact
+$advanced_options.cyc=$cyc
+$advanced_options.norm=$norm
+$advanced_options.norm_type=$norm_type
+$advanced_options.upper_threshold=$upper_threshold
+$advanced_options.lower_threshold=$lower_threshold
+$advanced_options.min_width=$min_width
+$advanced_options.seq_alg=$seq_alg
+$advanced_options.min_read_count=$min_read_count
+$advanced_options.use_median=$use_median
+#end if
+</configfile>
+  </configfiles>
+  <outputs>
+    <data format="bed" name="output" label="${tool.name} on ${on_string}" />
+  </outputs>
+  <help>
+
+**What it does**
+
+This tool uses cn.mops (Copy Number estimation by a Mixture Of PoissonS) to call copy number variations
+and aberrations (CNVs and CNAs) from targeted next generation sequencing (NGS) data.
+
+**Output format**
+
+========== ========================
+Column     Description
+---------- ------------------------
+chr        Chromosome
+starts     Start of CNV region
+ends       End of CNV region
+sampleName Name of the sample with CNV
+median     Median value of CNV
+mean       Mean value of CNV
+CN         Copy number class (see below)
+========== ========================
+
+Copy number classes are identified as follows::
+
+ CN2: normal copy number for diploid samples
+ CN1: heterozygous deletion 
+ CN0: homozygous deletion 
+ CN3 - CN8: amplifications
+ 
+For non-tumor samples the highest copy number class is 8 - higher copy numbers have not been reported.
+CN8 is expected to have 4 times as many reads (for times as high coverage) as CN2.
+For tumor samples very high copy numbers have been observed (e.g. CN64),
+therefore the parameters of cn.mops have to be adjusted to allow for high copy numbers.
+A way to set the parameters is given in https://gist.github.com/gklambauer/8955203
+
+**License and citation**
+
+This Galaxy tool is Copyright © 2015 `CRS4 Srl.`_ and is released under the `MIT license`_.
+
+.. _CRS4 Srl.: http://www.crs4.it/
+.. _MIT license: http://opensource.org/licenses/MIT
+
+You can use this tool only if you agree to the license terms of: `cn.mops`_.
+
+.. _cn.mops: http://bioconductor.org/packages/release/bioc/html/cn.mops.html
+
+If you use this tool, please cite:
+
+- |Cuccuru2014|_
+- |Klambauer2012|_.
+
+.. |Cuccuru2014| replace:: Cuccuru, G., Orsini, M., Pinna, A., Sbardellati, A., Soranzo, N., Travaglione, A., Uva, P., Zanetti, G., Fotia, G. (2014) Orione, a web-based framework for NGS analysis in microbiology. *Bioinformatics* 30(13), 1928-1929
+.. _Cuccuru2014: http://bioinformatics.oxfordjournals.org/content/30/13/1928
+.. |Klambauer2012| replace:: Klambauer, G., *et al.* (2012) cn.MOPS: Mixture of Poissons for Discovering Copy Number Variations in Next Generation Sequencing Data with a Low False Discovery Rate. *Nucleic Acids Research* 40, e69
+.. _Klambauer2012: http://http://nar.oxfordjournals.org/content/40/9/e69
+  </help>
+  <citations>
+    <citation type="doi">10.1093/bioinformatics/btu135</citation>
+    <citation type="doi">10.1093/nar/gks003</citation>
+  </citations>
+</tool>
