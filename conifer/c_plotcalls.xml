@@ -1,0 +1,57 @@
+<tool id="conifer_plotcalls" name="CoNIFER plot caller" version="1.0">
+	<description>cnv caller</description>
+	<command interpreter="perl">
+    conifer_wrapper.pl --input $input --regions $plot_option.regions --html_file $html_file --html_folder $html_file.files_path
+    #if str($plot_option.plot_option_select) == "single"
+        --sample "$plot_option.sample"
+    #else
+        --window $plot_option.window
+        --multiple
+    #end if
+    2&gt;&amp;1
+	</command>
+	<inputs>
+		<param format="hdf5" name="input" type="data" label="CoNIFER output analysis file (hdf5)"/>
+		<conditional name="plot_option">
+			<param name="plot_option_select" type="select" label="Single or multiple regions?">
+				<option value="single" selected="true">Single region</option>
+				<option value="multiple">Multiple regions</option>
+			</param>
+			<when value="single">
+				<param name="regions" type="text" size="50" optional="false" label="Region" help="Region for the plot (i.e. chr1:1000-2000)"/>
+				<param name="sample" type="text" size="50" optional="true" value="" label="Sample" help="Sample names to be highlighted in the plot (optional)"/>
+			</when>
+			<when value="multiple">
+				<param format="tabular" name="regions" type="data" label="CoNIFER output calls file (tabular)"/>
+                <param name="window" size="10" type="integer" value="50" label="Window"/>
+			</when>
+		</conditional>
+    </inputs>
+    <outputs>
+        <data format="html" name="html_file" label="${tool.name} on ${on_string}" />
+    </outputs>
+<help>
+**What it does**
+
+Draw a HTML page with CNV plots. It accepts as input either a single region or a file with CoNIFER calls.
+
+**License and citation**
+
+This Galaxy tool is Copyright © 2013 `CRS4 Srl.`_ and is released under the `MIT license`_.
+
+.. _CRS4 Srl.: http://www.crs4.it/
+.. _MIT license: http://opensource.org/licenses/MIT
+
+If you use this tool in Galaxy, please cite |Cuccuru2014|_.
+
+.. |Cuccuru2014| replace:: Cuccuru, G., Orsini, M., Pinna, A., Sbardellati, A., Soranzo, N., Travaglione, A., Uva, P., Zanetti, G., Fotia, G. (2014) Orione, a web-based framework for NGS analysis in microbiology. *Bioinformatics*, accepted
+.. _Cuccuru2014: http://bioinformatics.oxfordjournals.org/content/early/2014/03/10/bioinformatics.btu135
+
+This tool uses CoNIFER, which is licensed separately. Please cite:
+
+- |Krumm2012|_.
+
+.. |Krumm2012| replace::  (Krumm et al., 2012) Copy number variation detection and genotyping from exome sequence data. Genome research.
+.. _Krumm2012: http://genome.cshlp.org/content/22/8/1525.full?sid=4a7a300a-b960-4544-8611-effc3315411c
+  </help>
+</tool>

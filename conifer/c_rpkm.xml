@@ -1,0 +1,82 @@
+<tool id="conifer_rpkm" name="CoNIFER RPKM and Analyze" version="1.0">
+  <description></description>
+  <command>
+     mkdir rpkm_dir;
+#for $input_bam in $inputs:
+	#if str($input_bam.label.value) != "":
+	     ln -s ${input_bam.inputFile} ${$input_bam.label.value}.bam;
+	     ln -s ${input_bam.inputFile.metadata.bam_index} ${$input_bam.label.value}.bam.bai;
+	     python \${CONIFER_PATH}/conifer.py rpkm 
+	     --probes $probesFile 
+	     --input ${$input_bam.label.value}.bam
+	     --output rpkm_dir/${$input_bam.label.value}.txt;
+	#else
+	     ln -s ${input_bam.inputFile} ${input_bam.inputFile.dataset.name}.bam;
+	     ln -s ${input_bam.inputFile.metadata.bam_index} ${input_bam.inputFile.dataset.name}.bam.bai;
+	     python \${CONIFER_PATH}/conifer.py rpkm 
+	     --probes $probesFile 
+	     --input ${input_bam.inputFile.dataset.name}.bam
+	     --output rpkm_dir/${input_bam.inputFile.dataset.name}.txt;
+	#end if
+#end for
+     python \${CONIFER_PATH}/conifer.py analyze 
+     --probes $probesFile 
+     --rpkm_dir rpkm_dir  
+     --output $outputFile 
+     --svd $svd 
+     2&gt;&amp;1;
+  </command>
+  <inputs>
+    <param format="bed" name="probesFile" type="data" label="Target regions (BED)" />
+    <repeat name="inputs" title="BAM" min="2" help="Need to add more files? Use controls below.">
+      <param format="bam" name="inputFile" type="data" label="BAM file" />
+      <param name="label" type="text" size="30" value="" label="Label" help="Label to use in the output. If not given, the dataset name will be used instead">
+        <validator type="regex" message="Spaces are not allowed">^\S*$</validator>
+      </param>
+    </repeat>
+    <param name="svd" type="integer" value="2" label="SVD" />
+  </inputs>
+  <outputs>
+    <data format="hdf5" name="outputFile" label="${tool.name} on ${on_string}: hdf5" />
+  </outputs>
+  <help>
+
+.. class:: warningmark
+
+**Warning about SVD**
+
+The SVD value must be less than the number of samples.
+
+E.g.: if the number of samples is 3, the value of SVD must be 2 or less.
+
+**What it does**
+
+This tool calculates RPKM for each BAM file and analyzes them, afterward it creates a unique HDF5 file containing all SVD-ZRPKM values,
+probes and samples for downstream analysis with 'CoNIFER CNV caller' and 'CoNIFER plot'.
+
+**License and citation**
+
+This Galaxy tool is Copyright © 2015 `CRS4 Srl.`_ and is released under the `MIT license`_.
+
+.. _CRS4 Srl.: http://www.crs4.it/
+.. _MIT license: http://opensource.org/licenses/MIT
+
+You can use this tool only if you agree to the license terms of: `CoNIFER`_.
+
+.. _CoNIFER: http://conifer.sourceforge.net/
+
+If you use this tool, please cite:
+
+- |Cuccuru2014|_
+- |Krumm2012|_.
+
+.. |Cuccuru2014| replace:: Cuccuru, G., Orsini, M., Pinna, A., Sbardellati, A., Soranzo, N., Travaglione, A., Uva, P., Zanetti, G., Fotia, G. (2014) Orione, a web-based framework for NGS analysis in microbiology. *Bioinformatics* 30(13), 1928-1929
+.. _Cuccuru2014: http://bioinformatics.oxfordjournals.org/content/30/13/1928
+.. |Krumm2012| replace::  Krumm, N., Sudmant, P. H., Ko, A., O'Roak, B. J., Malig, M., Coe, B. P., NHLBI Exome Sequencing Project, Quinlan, A. R., Nickerson, D. A., Eichler, E. E. (2012) Copy number variation detection and genotyping from exome sequence data. *Genome Res.* 22(8), 1525-1532
+.. _Krumm2012: http://genome.cshlp.org/content/22/8/1525
+  </help>
+  <citations>
+    <citation type="doi">10.1093/bioinformatics/btu135</citation>
+    <citation type="doi">10.1101/gr.138115.112</citation>
+  </citations>
+</tool>

@@ -1,0 +1,43 @@
+<tool id="conifer_call" name="CoNIFER CNVs caller" version="1.0">
+  <description>cnv caller</description>
+  <command>
+       python \${CONIFER_PATH}/conifer.py call
+	--input $input
+	--output temporary
+        --threshold $threshold
+	2&gt;&amp;1
+	&amp;&amp; awk '{print $2,$3,$4,$5,$1}' OFS="\t" temporary &gt; $outputFile
+  </command>
+  <inputs>
+    <param format="hdf5" name="input" type="data" label="CoNIFER output analysis file (hdf5)"/>
+    <param name="threshold" size="10" type="float" value="1.50" label="Threshold"/>
+  </inputs>
+  <outputs>
+    <data format="tabular" name="outputFile" label="${tool.name} on ${on_string}" />
+  </outputs>
+ <help>
+**What it does**
+
+This tool is a CNVs caller using SVD-ZRPKM thresholding.
+
+
+**License and citation**
+
+This Galaxy tool is Copyright © 2013 `CRS4 Srl.`_ and is released under the `MIT license`_.
+
+.. _CRS4 Srl.: http://www.crs4.it/
+.. _MIT license: http://opensource.org/licenses/MIT
+
+If you use this tool in Galaxy, please cite |Cuccuru2014|_.
+
+.. |Cuccuru2014| replace:: Cuccuru, G., Orsini, M., Pinna, A., Sbardellati, A., Soranzo, N., Travaglione, A., Uva, P., Zanetti, G., Fotia, G. (2014) Orione, a web-based framework for NGS analysis in microbiology. *Bioinformatics*, accepted
+.. _Cuccuru2014: http://bioinformatics.oxfordjournals.org/content/early/2014/03/10/bioinformatics.btu135
+
+This tool uses CoNIFER, which is licensed separately. Please cite:
+
+- |Krumm2012|_.
+
+.. |Krumm2012| replace::  (Krumm et al., 2012) Copy number variation detection and genotyping from exome sequence data. Genome research.
+.. _Krumm2012: http://genome.cshlp.org/content/22/8/1525.full?sid=4a7a300a-b960-4544-8611-effc3315411c
+  </help>
+</tool>
