@@ -1,9 +1,10 @@
 # Load ExomeDepth library (without warnings)
 suppressMessages(library(ExomeDepth))
 
-# Import parameters from xml wrapper (args_file)
+# Import parameters
 args  <- commandArgs(trailingOnly=TRUE)
-param <- read.table(args[1],sep="=", as.is=TRUE)
+eval(parse(text=args[[1]]))
+param <- read.table(mypars,sep="=", as.is=TRUE)
 
 # Set common parameters
 target      <- param[match("target",param[,1]),2]
@@ -45,21 +46,18 @@ for (i in 1:nsamples){
 
 	# Create the aggregate reference set for this sample
 	my.choice <- suppressWarnings(suppressMessages(
-					select.reference.set(test.counts = ExomeCount.mat[,i],  
-                           				 reference.counts = subset(ExomeCount.mat, select=-i),  
-                           			     bin.length = (ExomeCount.dafr$end - ExomeCount.dafr$start)/1000,
-                           		         n.bins.reduced = 10000)))
-
-	my.reference.selected <- apply(X = ExomeCount.mat[, my.choice$reference.choice, drop=FALSE],
-                               	   MAR = 1,
-                               	   FUN = sum)
+			select.reference.set(test.counts = ExomeCount.mat[,i],  
+					     reference.counts = subset(ExomeCount.mat, select=-i),  
+					     bin.length = (ExomeCount.dafr$end - ExomeCount.dafr$start)/1000,
+					     n.bins.reduced = 10000)))
+	
+	my.reference.selected <- apply(X = ExomeCount.mat[, my.choice$reference.choice, drop=FALSE], MAR = 1, FUN = sum)
                                
 	# Now create the ExomeDepth object for the CNVs call
 	all.exons<-suppressWarnings(suppressMessages(new('ExomeDepth',
-               test = ExomeCount.mat[,i],
-               reference = my.reference.selected,
-               formula = 'cbind(test,reference)~1')))
-
+		test = ExomeCount.mat[,i],
+		reference = my.reference.selected,
+		formula = 'cbind(test,reference)~1')))
 
 	# Now call the CNVs
 	result <- try(all.exons<-suppressMessages(CallCNVs(x=all.exons,
@@ -84,10 +82,10 @@ for (i in 1:nsamples){
             			corr=my.cor,
             			all.exons@CNV.calls[,c(4,9,12)])
             			
-    # Re-order by chr and position
-    chrOrder<-c(paste("chr",1:22,sep=""),"chrX","chrY","chrM")
-    my.results[,1] <- factor(my.results[,1], levels=chrOrder)
-    my.results <- my.results[order(my.results[,1], my.results[,2], my.results[,3]),]
+    	# Re-order by chr and position
+    	chrOrder<-c(paste("chr",1:22,sep=""),"chrX","chrY","chrM")
+    	my.results[,1] <- factor(my.results[,1], levels=chrOrder)
+    	my.results <- my.results[order(my.results[,1], my.results[,2], my.results[,3]),]
     
 	write.table(sep='\t', quote=FALSE, file = output,
             		x = my.results,
