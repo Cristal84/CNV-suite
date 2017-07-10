@@ -1,11 +1,11 @@
-<tool id="exomedepth" name="ExomeDepth" version="1.0.0">
-  <description>cnv caller</description>
-  <command interpreter="Rscript">
-   exomedepth.R $args_file
-  </command>
+<tool id="exomedepth" name="ExomeDepth" version="1.0.5">
+  <description>CNV caller</description>
   <requirements>
-     <requirement type="package" version="3.0.1">R</requirement>
+     <requirement type="package" version="1.1.10">r-exomedepth</requirement>
   </requirements>
+  <command>
+R CMD BATCH --no-save --no-restore '--args mypars="$args_file"' $__tool_directory__/exomedepth.R
+  </command>
   <inputs>
     <param format="bed" name="targetFile" type="data" label="Target regions (BED)">
       <validator type="unspecified_build" />
