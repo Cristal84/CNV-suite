@@ -1,11 +1,40 @@
 <tool id="cnmops" name="cn.mops" version="1.0.0">
   <description>cnv caller</description>
+  <requirements>
+        <requirement type="package" version="1.18.0">bioconductor-cn.mops</requirement>
+  </requirements>
   <command interpreter="Rscript">
    cnmops.R $args_file
   </command>
-  <requirements>
-     <requirement type="package" version="3.0.1">R</requirement>
-  </requirements>
+  <configfiles>
+    <configfile name="args_file">target=$targetFile
+padding=$padding
+mapping_mode=$mapping_mode
+#for $i in $inputs
+bam=${i.input}
+bam_bai=${i.input.metadata.bam_index}
+#if str($i.label.value) != "":
+bam_label=${$i.label.value}
+#else
+bam_label=${i.input.dataset.name}
+#end if
+#end for
+output=$output
+#if str($advanced_options.advanced_options_select) == "yes"
+advanced_mode=TRUE
+$advanced_options.prior_impact=$prior_impact
+$advanced_options.cyc=$cyc
+$advanced_options.norm=$norm
+$advanced_options.norm_type=$norm_type
+$advanced_options.upper_threshold=$upper_threshold
+$advanced_options.lower_threshold=$lower_threshold
+$advanced_options.min_width=$min_width
+$advanced_options.seq_alg=$seq_alg
+$advanced_options.min_read_count=$min_read_count
+$advanced_options.use_median=$use_median
+#end if
+</configfile>
+  </configfiles>
   <inputs>
     <param format="bed" name="targetFile" type="data" label="Target regions (BED)">
       <validator type="unspecified_build" />
@@ -48,7 +77,7 @@
         <param name="lower_threshold" type="float" value="-0.8" label="Cut-off for copy number losses" help="All CNV calling values below this value will be called as loss. The value should be set close to the log2 of the expected foldchange for copy number 1 or 0." />
         <param name="min_width" type="integer" value="5" label="Minimum width" help="Minimum number of segments a CNV should span." />
         <param name="seq_alg" type="select" label="Segmentation algorithm" help="">
-          <option value="fast" selected="fast">fast</option>
+          <option value="fast" selected="false">fast</option>
           <option value="DNAcopy">DNAcopy</option>
         </param>
         <param name="min_read_count" type="integer" value="1" label="Minimum read count" help="If all samples are below this value the algorithm will return the prior knowledge. This prevents the algorithm from being applied to segments with very low coverage." />
@@ -57,35 +86,6 @@
       <when value="no" />
     </conditional>
   </inputs>
-  <configfiles>
-    <configfile name="args_file">target=$targetFile
-padding=$padding
-mapping_mode=$mapping_mode
-#for $i in $inputs
-bam=${i.input}
-bam_bai=${i.input.metadata.bam_index}
-#if str($i.label.value) != "":
-bam_label=${$i.label.value}
-#else
-bam_label=${i.input.dataset.name}
-#end if
-#end for
-output=$output
-#if str($advanced_options.advanced_options_select) == "yes"
-advanced_mode=TRUE
-$advanced_options.prior_impact=$prior_impact
-$advanced_options.cyc=$cyc
-$advanced_options.norm=$norm
-$advanced_options.norm_type=$norm_type
-$advanced_options.upper_threshold=$upper_threshold
-$advanced_options.lower_threshold=$lower_threshold
-$advanced_options.min_width=$min_width
-$advanced_options.seq_alg=$seq_alg
-$advanced_options.min_read_count=$min_read_count
-$advanced_options.use_median=$use_median
-#end if
-</configfile>
-  </configfiles>
   <outputs>
     <data format="bed" name="output" label="${tool.name} on ${on_string}" />
   </outputs>
